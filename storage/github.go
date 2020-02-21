@@ -25,12 +25,7 @@ func NewClient() *client {
 func (c *client) SaveFile(filename, content string) error {
 
 	ctx := context.Background()
-	baseRef, _, err := c.Git.GetRef(
-		ctx,
-		"prateekgogia",
-		"notes",
-		"refs/heads/master",
-	)
+	baseRef, _, err := c.Git.GetRef(ctx, "prateekgogia", "notes", "refs/heads/master")
 	if err != nil {
 		return err
 	}
@@ -48,13 +43,16 @@ func (c *client) SaveFile(filename, content string) error {
 		return err
 	}
 
-	parent, _, err := c.Repositories.GetCommit(ctx, "prateekgogia", "notes", newRef.Object.GetSHA())
+	parent, _, err := c.Repositories.GetCommit(ctx, "prateekgogia", "notes", *newRef.Object.SHA)
+	if err != nil {
+		return err
+	}
 
 	parent.Commit.SHA = parent.SHA
 	commitMessage := fmt.Sprintf("test commit")
-	time := time.Now()
+	curTime := time.Now()
 	author := &github.CommitAuthor{
-		Date:  &time,
+		Date:  &curTime,
 		Name:  github.String("prateekgogia"),
 		Email: github.String("prateekgogia42@gmail.com"),
 	}
@@ -66,6 +64,13 @@ func (c *client) SaveFile(filename, content string) error {
 	if err != nil {
 		return err
 	}
+
+	newRef.Object.SHA = commit.SHA
+	reference, _, err := c.Git.UpdateRef(ctx, "prateekgogia", "notes", newRef, false)
+	if err != nil {
+		return err
+	}
 	fmt.Printf("Successfully committed %+v\n", commit)
+	fmt.Printf("Successfully committed reference is %+v\n", reference)
 	return nil
 }
