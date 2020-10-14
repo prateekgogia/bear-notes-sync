@@ -25,7 +25,7 @@ func NewClient() *client {
 func (c *client) SaveFile(filename, content string) error {
 
 	ctx := context.Background()
-	baseRef, _, err := c.Git.GetRef(ctx, "prateekgogia", "notes", "refs/heads/master")
+	baseRef, _, err := c.Git.GetRef(ctx, "githubName", "notes", "refs/heads/master")
 	if err != nil {
 		return err
 	}
@@ -38,12 +38,12 @@ func (c *client) SaveFile(filename, content string) error {
 		Path: github.String(filename), Type: github.String("blob"),
 		Content: github.String(content), Mode: github.String("100644")}}
 
-	tree, _, err := c.Git.CreateTree(ctx, "prateekgogia", "notes", *newRef.Object.SHA, t)
+	tree, _, err := c.Git.CreateTree(ctx, "githubName", "notes", *newRef.Object.SHA, t)
 	if err != nil {
 		return err
 	}
 
-	parent, _, err := c.Repositories.GetCommit(ctx, "prateekgogia", "notes", *newRef.Object.SHA)
+	parent, _, err := c.Repositories.GetCommit(ctx, "githubName", "notes", *newRef.Object.SHA)
 	if err != nil {
 		return err
 	}
@@ -53,20 +53,20 @@ func (c *client) SaveFile(filename, content string) error {
 	curTime := time.Now()
 	author := &github.CommitAuthor{
 		Date:  &curTime,
-		Name:  github.String("prateekgogia"),
-		Email: github.String("prateekgogia42@gmail.com"),
+		Name:  github.String("githubName"),
+		Email: github.String("githubName@gmail.com"),
 	}
 
 	commitInfo := &github.Commit{Author: author, Message: github.String(commitMessage),
 		Tree: tree, Parents: []github.Commit{*parent.Commit}}
 
-	commit, _, err := c.Git.CreateCommit(ctx, "prateekgogia", "notes", commitInfo)
+	commit, _, err := c.Git.CreateCommit(ctx, "githubName", "notes", commitInfo)
 	if err != nil {
 		return err
 	}
 
 	newRef.Object.SHA = commit.SHA
-	reference, _, err := c.Git.UpdateRef(ctx, "prateekgogia", "notes", newRef, false)
+	reference, _, err := c.Git.UpdateRef(ctx, "githubName", "notes", newRef, false)
 	if err != nil {
 		return err
 	}
